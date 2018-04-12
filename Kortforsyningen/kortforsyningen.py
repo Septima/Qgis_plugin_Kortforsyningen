@@ -31,6 +31,7 @@ from urllib2 import (
 import webbrowser
 from qgis.gui import QgsMessageBar
 from qgis.core import *
+from PyQt4.QtNetwork import *
 from PyQt4.QtCore import (
     QCoreApplication,
     QFileInfo,
@@ -125,6 +126,8 @@ class Kortforsyningen:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
+        self.networkManager = QNetworkAccessManager()
+
     def write_about_file(self, content):
         if os.path.exists(self.local_about_file):
             os.remove(self.local_about_file)
@@ -133,7 +136,11 @@ class Kortforsyningen:
             f.write(content)
             
     def initGui(self):
-        self.createMenu()
+        self.config = Config(self.settings, self.networkManager)
+        self.config.con_success.connect(self.createMenu)
+        self.config.kf_con_error.connect(self.show_kf_error)
+        self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
+        self.config.load()
         
     def show_kf_error(self):
         message = u'Check connection and click menu Kortforsyningen->Settings->OK'
@@ -150,10 +157,6 @@ class Kortforsyningen:
             self.iface.messageBar().pushWidget(widget, QgsMessageBar.WARNING, duration=10)
 
     def createMenu(self):
-        self.config = Config(self.settings)
-        self.config.kf_con_error.connect(self.show_kf_error)
-        self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
-        self.config.load()
         self.categories = self.config.get_categories()
         self.category_lists = self.config.get_category_lists()
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
