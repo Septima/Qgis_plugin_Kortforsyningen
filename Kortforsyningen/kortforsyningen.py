@@ -69,8 +69,8 @@ from myseptimasearchprovider import MySeptimaSearchProvider
 
 #Develop
 #CONFIG_FILE_URL = 'http://labs.septima.dk/qgis-kf-knap/kortforsyning_data.qlr'
-##CONFIG_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
-CONFIG_FILE_URL = 'https://raw.githubusercontent.com/Kortforsyningen/Qgis_plugin_Kortforsyningen/master/qlrfile/kortforsyning_data.qlr'
+CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
+#CONFIG_FILE_URL = 'https://raw.githubusercontent.com/Kortforsyningen/Qgis_plugin_Kortforsyningen/master/qlrfile/kortforsyning_data.qlr'
 
 ABOUT_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/about.html'
 ##ABOUT_FILE_URL = 'https://raw.githubusercontent.com/Kortforsyningen/Qgis_plugin_Kortforsyningen/master/about-html/about.html'
@@ -142,9 +142,11 @@ class Kortforsyningen:
         self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
         self.config.load()
         
-    def show_kf_error(self):
+    def show_kf_error(self, error_message):
+        log_message(error_message)
         message = u'Check connection and click menu Kortforsyningen->Settings->OK'
-        self.iface.messageBar().pushMessage("No contact to Kortforsyningen", message, level=QgsMessageBar.WARNING, duration=5)
+        #self.iface.messageBar().pushMessage("No contact to Kortforsyningen", message, level=QgsMessageBar.WARNING, duration=5)
+        self.iface.messageBar().pushMessage(error_message, message, level=QgsMessageBar.WARNING, duration=10)
 
     def show_kf_settings_warning(self):
             widget = self.iface.messageBar().createMessage(

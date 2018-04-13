@@ -7,7 +7,7 @@ from PyQt4 import (
 class Config(QtCore.QObject):
 
     con_success = QtCore.pyqtSignal()
-    kf_con_error = QtCore.pyqtSignal()
+    kf_con_error = QtCore.pyqtSignal(str)
     kf_settings_warning = QtCore.pyqtSignal()
             
     def __init__(self, settings, networkManager):
@@ -23,8 +23,8 @@ class Config(QtCore.QObject):
     def propagate_kf_settings_warning(self):
         self.kf_settings_warning.emit()
         
-    def propagate_kf_con_error(self):
-        self.kf_con_error.emit()
+    def propagate_kf_con_error(self, message):
+        self.kf_con_error.emit(message)
         
     def load(self):
         self.kf_config.load()

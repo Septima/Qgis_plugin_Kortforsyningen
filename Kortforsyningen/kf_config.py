@@ -45,7 +45,7 @@ def log_message(message):
 class KfConfig(QtCore.QObject):
     
     kf_con_success = QtCore.pyqtSignal()
-    kf_con_error = QtCore.pyqtSignal()
+    kf_con_error = QtCore.pyqtSignal(str)
     kf_settings_warning = QtCore.pyqtSignal()
 
     def __init__(self, settings, networkManager):
@@ -70,49 +70,52 @@ class KfConfig(QtCore.QObject):
             url_to_get = self.replace_variables(KF_SERVICES_URL)
             reply = self.networkManager.get(QNetworkRequest( QUrl(url_to_get) ))
             func = partial(self.got_allowed_kf_services_handler, reply)
-            #func = lambda: self.got_allowed_kf_services_handler( reply)
+            #func = lambda : self.got_allowed_kf_services_handler( reply)
             reply.finished.connect(func)
-            reply.error.connect(self.report_network_error)
+            #reply.error.connect(self.report_network_error)
         except Exception as e:
             log_message("get_allowed_kf_services.except: " + str(e))
         #reply.error.connect(self.report_network_error)
         
-    def report_network_error(self, networkerror):
-        log_message("report_network_error")
-        self.kf_con_error.emit()
+    def report_network_error(self, message):
+        full_msg = "Network Error: " + message
+        self.kf_con_error.emit(full_msg)
         self.background_category = None
         self.categories = []
         
     def got_allowed_kf_services_handler(self, reply):
-        log_message("got_allowed_kf_services_handler")
-        allowed_kf_services = {}
-        allowed_kf_services['any_type'] = {'services': []}
-        xml = str(reply.readAll())
-        #reponse = self.get_allowed_kf_services_reply.readAll()
-        #reponse = networkReply.readAll()
-        doc = QtXml.QDomDocument()
-        doc.setContent(xml)
-        service_types = doc.documentElement().childNodes()
-        i = 0
-        while i<service_types.count():
-            service_type = service_types.at(i)
-            service_type_name= service_type.nodeName()
-            allowed_kf_services[service_type_name] = {'services': []}
-            services = service_type.childNodes()
-            j = 0
-            while j<services.count():
-                service = services.at(j)
-                service_name = service.nodeName()
-                allowed_kf_services[service_type_name]['services'].append(service_name)
-                allowed_kf_services['any_type']['services'].append(service_name)
-                j = j + 1
-            i = i + 1
-        self.allowed_kf_services = allowed_kf_services
-        self.debug_write_allowed_services()
-        self.get_kf_qlr_file()
+        if reply.error() == QNetworkReply.NoError:
+            #log_message("got_allowed_kf_services_handler")
+            allowed_kf_services = {}
+            allowed_kf_services['any_type'] = {'services': []}
+            xml = str(reply.readAll())
+            #reponse = self.get_allowed_kf_services_reply.readAll()
+            #reponse = networkReply.readAll()
+            doc = QtXml.QDomDocument()
+            doc.setContent(xml)
+            service_types = doc.documentElement().childNodes()
+            i = 0
+            while i<service_types.count():
+                service_type = service_types.at(i)
+                service_type_name= service_type.nodeName()
+                allowed_kf_services[service_type_name] = {'services': []}
+                services = service_type.childNodes()
+                j = 0
+                while j<services.count():
+                    service = services.at(j)
+                    service_name = service.nodeName()
+                    allowed_kf_services[service_type_name]['services'].append(service_name)
+                    allowed_kf_services['any_type']['services'].append(service_name)
+                    j = j + 1
+                i = i + 1
+            self.allowed_kf_services = allowed_kf_services
+            self.debug_write_allowed_services()
+            self.get_kf_qlr_file()
+        else:
+            self.report_network_error("allowed services" + reply.errorString())
 
     def get_kf_qlr_file(self):
-        log_message("get_kf_qlr_file")
+        #log_message("get_kf_qlr_file")
         config = None
         load_remote_config = True
 
@@ -133,21 +136,26 @@ class KfConfig(QtCore.QObject):
             self.kf_con_success.emit()
 
     def get_remote_kf_qlr(self):
+        #log_message("get_remote_kf_qlr: " + self.settings.value('kf_qlr_url'))
         reply = self.networkManager.get(QNetworkRequest(  QUrl(self.settings.value('kf_qlr_url')) ))
         func = partial(self.got_remote_kf_qlr, reply)
+        #func = lambda: self.got_remote_kf_qlr( reply)
         reply.finished.connect(func)
-        reply.error.connect(self.report_network_error)
+        #reply.error.connect(self.report_network_error)
 
     def got_remote_kf_qlr(self, reply):
-        content = reply.readAll()
-        content = unicode(content, 'utf-8')
-        content = self.replace_variables(content)
-
-        self.write_cached_kf_qlr(content)
-        config = self.read_cached_kf_qlr()
-        self.kf_qlr_file =  QlrFile(config)
-        self.background_category, self.categories = self.get_kf_categories()
-        self.kf_con_success.emit()
+        if reply.error() == QNetworkReply.NoError:
+            content = reply.readAll()
+            content = unicode(content, 'utf-8')
+            content = self.replace_variables(content)
+    
+            self.write_cached_kf_qlr(content)
+            config = self.read_cached_kf_qlr()
+            self.kf_qlr_file =  QlrFile(config)
+            self.background_category, self.categories = self.get_kf_categories()
+            self.kf_con_success.emit()
+        else:
+            self.report_network_error("Remote qlr" + reply.errorString())
 
     def get_categories(self):
          return self.categories
