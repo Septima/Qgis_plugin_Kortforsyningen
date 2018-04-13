@@ -327,7 +327,8 @@ class Kortforsyningen:
         
     def reloadMenu(self):
         self.clearMenu()
-        self.createMenu()
+        self.config.load()
+        #self.createMenu()
     
     def clearMenu(self):
         # Remove the submenus
