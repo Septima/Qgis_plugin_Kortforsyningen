@@ -27,6 +27,7 @@ class Config(QtCore.QObject):
         self.kf_con_error.emit(message)
         
     def load(self):
+        self.local_config.load()
         self.kf_config.load()
 
     def kf_config_loaded(self):
