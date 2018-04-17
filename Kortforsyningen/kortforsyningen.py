@@ -137,7 +137,7 @@ class Kortforsyningen:
             
     def initGui(self):
         self.config = Config(self.settings, self.networkManager)
-        self.config.con_success.connect(self.createMenu)
+        self.config.con_loaded.connect(self.createMenu)
         self.config.kf_con_error.connect(self.show_kf_error)
         self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
         self.config.load()

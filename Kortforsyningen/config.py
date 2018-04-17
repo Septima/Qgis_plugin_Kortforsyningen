@@ -6,7 +6,7 @@ from PyQt4 import (
 
 class Config(QtCore.QObject):
 
-    con_success = QtCore.pyqtSignal()
+    con_loaded = QtCore.pyqtSignal()
     kf_con_error = QtCore.pyqtSignal(str)
     kf_settings_warning = QtCore.pyqtSignal()
             
@@ -22,17 +22,19 @@ class Config(QtCore.QObject):
 
     def propagate_kf_settings_warning(self):
         self.kf_settings_warning.emit()
+        self.con_loaded.emit()
         
     def propagate_kf_con_error(self, message):
         self.kf_con_error.emit(message)
+        self.con_loaded.emit()
         
     def load(self):
+        self.categories = []
+        self.categories_list = []
         self.local_config.load()
         self.kf_config.load()
 
     def kf_config_loaded(self):
-        self.categories = []
-        self.categories_list = []
         if self.settings.value('use_custom_qlr_file') and self.settings.value('kf_only_background'):
             self.kf_categories = []
             background_category = self.kf_config.get_background_category()
@@ -46,7 +48,7 @@ class Config(QtCore.QObject):
         
         self.categories_list.append(self.kf_categories)
         self.categories_list.append(self.local_categories)
-        self.con_success.emit()
+        self.con_loaded.emit()
         
     def get_category_lists(self):
         return self.categories_list
