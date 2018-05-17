@@ -33,15 +33,14 @@ FORM_CLASS, _ = uic.loadUiType(
 class KFSettings(SettingManager):
     def __init__(self):
         SettingManager.__init__(self, 'Kortforsyningen')
-        self.addSetting('username', 'string', 'global', '')
-        self.addSetting('password', 'string', 'global', '')
+        self.addSetting('token', 'string', 'global', '')
         self.addSetting('use_custom_qlr_file', 'bool', 'global', False)
         self.addSetting('custom_qlr_file', 'string', 'global', '')
         self.addSetting('kf_only_background', 'bool', 'global', False)
         self.addSetting('remember_settings', 'bool', 'global', False)
         
     def is_set(self):
-        if self.value('username') and self.value('password'):
+        if self.value('token'):
             return True
         return False
 

@@ -37,7 +37,7 @@ from qlr_file import QlrFile
 from qgislogger import QgisLogger
 
 FILE_MAX_AGE = datetime.timedelta(hours=0)
-KF_SERVICES_URL = 'http://services.kortforsyningen.dk/service?request=GetServices&login={{kf_username}}&password={{kf_password}}'
+KF_SERVICES_URL = 'http://services.kortforsyningen.dk/service?request=GetServices&token={{kf_token}}'
 
 def log_message(message):
     QgsMessageLog.logMessage(message, 'Kortforsyningen plugin')
@@ -215,8 +215,7 @@ class KfConfig(QtCore.QObject):
     def replace_variables(self, text):
         result = text
         replace_vars = {}
-        replace_vars["kf_username"] = self.settings.value('username')
-        replace_vars["kf_password"] = self.settings.value('password')
+        replace_vars["kf_token"] = self.settings.value('token')
         for i, j in replace_vars.iteritems():
             result = result.replace("{{" + str(i) + "}}", str(j))
         return result

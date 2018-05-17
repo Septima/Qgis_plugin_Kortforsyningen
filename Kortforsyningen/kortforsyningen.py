@@ -64,12 +64,8 @@ from qlr_file import QlrFile
 from config import Config
 
 from myseptimasearchprovider import MySeptimaSearchProvider
-#Real URL"
-#CONFIG_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/qgis_plugin.qlr'
-
-#Develop
-#CONFIG_FILE_URL = 'http://labs.septima.dk/qgis-kf-knap/kortforsyning_data.qlr'
-CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
+##CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
+CONFIG_FILE_URL ='https://labs.septima.dk/qgis-kf-knap/kortforsyning_data_token.qlr'
 
 ABOUT_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/about.html'
 FILE_MAX_AGE = datetime.timedelta(hours=0)
@@ -114,18 +110,8 @@ class Kortforsyningen:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-<<<<<<< HEAD
-    def write_about_file(self, content):
-        if os.path.exists(self.local_about_file):
-            os.remove(self.local_about_file)
-
-        with codecs.open(self.local_about_file, 'w') as f:
-            f.write(content)
-            
-=======
         self.networkManager = QNetworkAccessManager()
 
->>>>>>> branch 'master' of https://github.com/Septima/Qgis_plugin_Kortforsyningen_v2.git
     def initGui(self):
         self.config = Config(self.settings, self.networkManager)
         self.config.con_loaded.connect(self.createMenu)
@@ -140,7 +126,7 @@ class Kortforsyningen:
 
     def show_kf_settings_warning(self):
             widget = self.iface.messageBar().createMessage(
-                self.tr('Kortforsyningen'), self.tr(u'Username/Password not set or wrong. Click menu Kortforsyningen->Settings')
+                self.tr('Kortforsyningen'), self.tr(u'Token not set or wrong. Click menu Kortforsyningen->Settings')
             )
             settings_btn = QPushButton(widget)
             settings_btn.setText(self.tr("Settings"))
@@ -280,10 +266,6 @@ class Kortforsyningen:
                 webbrowser.open(ABOUT_FILE_URL)
 
     def unload(self):
-        # Remove settings if user not asked to keep them
-        if self.settings.value('remember_settings') is False:
-            self.settings.setValue('username', '')
-            self.settings.setValue('password', '')
         self.clearMenu();
         
     def reloadMenu(self):
