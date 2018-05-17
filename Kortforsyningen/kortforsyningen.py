@@ -31,6 +31,7 @@ from urllib2 import (
 import webbrowser
 from qgis.gui import QgsMessageBar
 from qgis.core import *
+from PyQt4.QtNetwork import *
 from PyQt4.QtCore import (
     QCoreApplication,
     QFileInfo,
@@ -68,11 +69,9 @@ from myseptimasearchprovider import MySeptimaSearchProvider
 
 #Develop
 #CONFIG_FILE_URL = 'http://labs.septima.dk/qgis-kf-knap/kortforsyning_data.qlr'
-##CONFIG_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
-CONFIG_FILE_URL = 'https://raw.githubusercontent.com/Kortforsyningen/Qgis_plugin_Kortforsyningen/master/qlrfile/kortforsyning_data.qlr'
+CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
 
 ABOUT_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/about.html'
-##ABOUT_FILE_URL = 'https://raw.githubusercontent.com/Kortforsyningen/Qgis_plugin_Kortforsyningen/master/about-html/about.html'
 FILE_MAX_AGE = datetime.timedelta(hours=0)
 
 def log_message(message):
@@ -82,13 +81,6 @@ class Kortforsyningen:
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
-        """Constructor.
-
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
         # Save reference to the QGIS interface
         self.iface = iface
         self.settings = KFSettings()
@@ -102,9 +94,6 @@ class Kortforsyningen:
         self.settings.addSetting('kf_qlr_url', 'string', 'global', CONFIG_FILE_URL)
 
         self.local_about_file = kf_path + 'about.html'
-
-        # An error menu object, set to None.
-        self.error_menu = None
 
         # Categories
         self.categories = []
@@ -125,6 +114,7 @@ class Kortforsyningen:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
+<<<<<<< HEAD
     def write_about_file(self, content):
         if os.path.exists(self.local_about_file):
             os.remove(self.local_about_file)
@@ -132,12 +122,21 @@ class Kortforsyningen:
         with codecs.open(self.local_about_file, 'w') as f:
             f.write(content)
             
+=======
+        self.networkManager = QNetworkAccessManager()
+
+>>>>>>> branch 'master' of https://github.com/Septima/Qgis_plugin_Kortforsyningen_v2.git
     def initGui(self):
-        self.createMenu()
+        self.config = Config(self.settings, self.networkManager)
+        self.config.con_loaded.connect(self.createMenu)
+        self.config.kf_con_error.connect(self.show_kf_error)
+        self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
+        self.config.load()
         
-    def show_kf_error(self):
+    def show_kf_error(self, error_message):
+        log_message(error_message)
         message = u'Check connection and click menu Kortforsyningen->Settings->OK'
-        self.iface.messageBar().pushMessage("No contact to Kortforsyningen", message, level=QgsMessageBar.WARNING, duration=5)
+        self.iface.messageBar().pushMessage(error_message, message, level=QgsMessageBar.WARNING, duration=10)
 
     def show_kf_settings_warning(self):
             widget = self.iface.messageBar().createMessage(
@@ -150,15 +149,10 @@ class Kortforsyningen:
             self.iface.messageBar().pushWidget(widget, QgsMessageBar.WARNING, duration=10)
 
     def createMenu(self):
-        self.config = Config(self.settings)
-        self.config.kf_con_error.connect(self.show_kf_error)
-        self.config.kf_settings_warning.connect(self.show_kf_settings_warning)
-        self.config.load()
         self.categories = self.config.get_categories()
         self.category_lists = self.config.get_category_lists()
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        #icon_path = ':/plugins/Kortforsyningen/icon.png'
         icon_path = ':/plugins/Kortforsyningen/settings-cog.png'
         icon_path_info = ':/plugins/Kortforsyningen/icon_about.png'
 
@@ -167,9 +161,6 @@ class Kortforsyningen:
         self.menu.setTitle(self.tr('Kortforsyningen'))
         
         searchable_layers = []
-
-        if self.error_menu:
-            self.menu.addAction(self.error_menu)
 
         # Add menu object for each theme
         self.category_menus = []
@@ -254,33 +245,8 @@ class Kortforsyningen:
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('Kortforsyningen', message)
-
-    # Taken directly from menu_from_project
-    def getFirstChildByTagNameValue(self, elt, tagName, key, value):
-        nodes = elt.elementsByTagName(tagName)
-        i = 0
-        while i < nodes.count():
-            node = nodes.at(i)
-            idNode = node.namedItem(key)
-            if idNode is not None:
-                child = idNode.firstChild().toText().data()
-                # layer found
-                if child == value:
-                    return node
-            i += 1
-        return None
 
     def settings_dialog(self):
         dlg = KFSettingsDialog(self.settings)
@@ -322,7 +288,8 @@ class Kortforsyningen:
         
     def reloadMenu(self):
         self.clearMenu()
-        self.createMenu()
+        self.config.load()
+        #self.createMenu()
     
     def clearMenu(self):
         # Remove the submenus
