@@ -64,13 +64,10 @@ from qlr_file import QlrFile
 from config import Config
 
 from myseptimasearchprovider import MySeptimaSearchProvider
-#Real URL"
-#CONFIG_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/qgis_plugin.qlr'
+##CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
+CONFIG_FILE_URL ='https://labs.septima.dk/qgis-kf-knap/kortforsyning_data_token.qlr'
 
-#Develop
-#CONFIG_FILE_URL = 'http://labs.septima.dk/qgis-kf-knap/kortforsyning_data.qlr'
-CONFIG_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/kortforsyning_data.qlr'
-ABOUT_FILE_URL = 'https://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/about.html'
+ABOUT_FILE_URL = 'http://apps2.kortforsyningen.dk/qgis_knap_config/Kortforsyningen/kf/about.html'
 FILE_MAX_AGE = datetime.timedelta(hours=0)
 
 def log_message(message):
@@ -129,7 +126,7 @@ class Kortforsyningen:
 
     def show_kf_settings_warning(self):
             widget = self.iface.messageBar().createMessage(
-                self.tr('Kortforsyningen'), self.tr(u'Username/Password not set or wrong. Click menu Kortforsyningen->Settings')
+                self.tr('Kortforsyningen'), self.tr(u'Token not set or wrong. Click menu Kortforsyningen->Settings')
             )
             settings_btn = QPushButton(widget)
             settings_btn.setText(self.tr("Settings"))
@@ -269,10 +266,6 @@ class Kortforsyningen:
                 webbrowser.open(ABOUT_FILE_URL)
 
     def unload(self):
-        # Remove settings if user not asked to keep them
-        if self.settings.value('remember_settings') is False:
-            self.settings.setValue('username', '')
-            self.settings.setValue('password', '')
         self.clearMenu();
         
     def reloadMenu(self):
